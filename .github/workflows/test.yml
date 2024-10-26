@@ -36,7 +36,7 @@ jobs:
         if: failure()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: Build Error
+          header: Testcase Error
           message: |
             **Testcases Failed** :x:
             ```
