@@ -1,0 +1,10 @@
+webScrapperJob:
+  count: 20
+tokenizerJob:
+  count: 20
+
+external:
+  timeout: 30
+
+defaultFilePath: "../example/endg-urls.txt"
+resultLeght: 10
