@@ -41,7 +41,7 @@ jobs:
         if: failure()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          header: Build Error
+          header: Lint Error
           message: |
             **Build Failed** :x:
             ```
