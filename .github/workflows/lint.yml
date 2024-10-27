@@ -33,7 +33,7 @@ jobs:
         id: lint
         run: |
           echo 'LINT_ERRORS<<EOF' >> $GITHUB_OUTPUT
-          echo "LINT_ERRORS=$(golangci-lint run --fix 2>&1)\n" >> $GITHUB_OUTPUT
+          echo "LINT_ERRORS=$(golangci-lint run --fix)\n" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
           golangci-lint run --fix
           
