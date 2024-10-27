@@ -34,9 +34,10 @@ jobs:
         id: lint
         run: |
           # Capture the output of golangci-lint
-          OUTPUT=$(golangci-lint run --out-format=tab || true)
-          # Set the output for later steps
-          echo "lint_errors=$OUTPUT" >> $GITHUB_ENV
+          echo 'LINT_ERRORS<<EOF' >> $GITHUB_OUTPUT
+          echo "LINT_ERRORS=$(golangci-lint run --fix 2>&1)\n" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+          golangci-lint run --fix
 
       - name: Output lint errors
         uses: marocchino/sticky-pull-request-comment@v2
@@ -45,7 +46,7 @@ jobs:
           message: |
             **Lint Errors** :x:
             ```
-            ${{ env.lint_errors }}
+            ${{ join(steps.build.outputs.*, '\n') }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
