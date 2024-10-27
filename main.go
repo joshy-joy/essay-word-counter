@@ -8,6 +8,7 @@ import (
 	"os/signal"
 
 	"github.com/joshy-joy/essay-word-counter/config"
+	"github.com/joshy-joy/essay-word-counter/constants"
 	"github.com/joshy-joy/essay-word-counter/jobs"
 )
 
@@ -21,8 +22,8 @@ func shutdown(cancel context.CancelFunc) {
 }
 
 func getFlags() {
-	file := flag.String("file", config.Get().DefaultFilePath, "Optional: To set file path containing the url")
-	count := flag.Int("top", config.Get().ResultLength, "Optional: To set result count")
+	file := flag.String(constants.FileFlagConstantName, config.Get().DefaultFilePath, "Optional: To set file path containing the url")
+	count := flag.Int(constants.TopFlagConstantName, config.Get().ResultLength, "Optional: To set result count")
 	flag.Parse()
 	config.SetFilePath(*file)
 	config.SetTopN(*count)
@@ -36,7 +37,8 @@ func main() {
 	// Graceful shutdown on interrupt signal
 	go shutdown(cancel)
 
-	err := config.InitConfig()
+	// load production configs
+	err := config.InitConfig(constants.ProdConfigFilePath)
 	if err != nil {
 		log.Fatal("error initializing configurations")
 	}

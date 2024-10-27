@@ -1,0 +1,11 @@
+webScrapperJob:
+  count: 2
+tokenizerJob:
+  count: 2
+
+external:
+  timeoutInSeconds: 30
+
+defaultFilePath: "./example/test.txt"
+resultLength: 2
+wordMinLength: 3
