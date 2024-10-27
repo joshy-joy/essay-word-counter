@@ -27,8 +27,8 @@ jobs:
       - name: Run Test Cases
         id: test
         run: |
-          echo 'BUILD_ERRORS<<EOF' >> $GITHUB_OUTPUT
-          echo "BUILD_ERRORS=$(go test ./... -v 2>&1)\n" >> $GITHUB_OUTPUT
+          echo 'TEST_ERRORS<<EOF' >> $GITHUB_OUTPUT
+          echo "TEST_ERRORS=$(go test ./... -v 2>&1)\n" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
           go test ./... -v
           
@@ -40,7 +40,7 @@ jobs:
           message: |
             **Testcases Failed** :x:
             ```
-            ${{ join(steps.build.outputs.*, '\n') }}
+            ${{ join(steps.test.outputs.*, '\n') }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
