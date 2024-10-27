@@ -1,6 +1,6 @@
 name: Lint
 
-"on":
+on:
   pull_request:
     branches:
       - main
@@ -10,6 +10,7 @@ name: Lint
       - '.vscode/**'
       
 permissions:
+  contents: read
   pull-requests: write
 
 jobs:
@@ -29,22 +30,22 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
         shell: bash
         
-      - name: Run golangci-lint with fix
+      - name: Run golangci-lint and capture output
         id: lint
         run: |
-          echo 'LINT_ERRORS<<EOF' >> $GITHUB_OUTPUT
-          echo "LINT_ERRORS=$(golangci-lint run --fix)\n" >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
-          golangci-lint run --fix
-          
+          # Capture the output of golangci-lint
+          OUTPUT=$(golangci-lint run --out-format=tab || true)
+          # Set the output for later steps
+          echo "lint_errors=$OUTPUT" >> $GITHUB_ENV
+
       - name: Output lint errors
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: Lint Error
           message: |
-            **Lint Failed** :x:
+            **Lint Errors** :x:
             ```
-            ${{ join(steps.lint.outputs.*, '\n') }}
+            ${{ env.lint_errors }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
