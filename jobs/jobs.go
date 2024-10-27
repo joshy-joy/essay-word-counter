@@ -4,33 +4,36 @@ import (
 	"container/heap"
 	"context"
 	"fmt"
-	"log"
-	"net/http"
-	"regexp"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/PuerkitoBio/goquery"
 	"github.com/cenkalti/backoff/v4"
 	"github.com/joshy-joy/essay-word-counter/config"
+	"github.com/joshy-joy/essay-word-counter/constants"
+	"github.com/joshy-joy/essay-word-counter/externals"
 	"github.com/joshy-joy/essay-word-counter/utils"
 	"github.com/joshy-joy/essay-word-counter/utils/minheap"
+	"log"
+	"regexp"
+	"strings"
+	"sync"
 )
 
+var (
+	utilsReadFile       = utils.ReadFile
+	externalsFetchEssay = externals.FetchEssay
+)
 var (
 	wordFreqMap = make(map[string]int)
 	wordFreqMux sync.Mutex
 )
 
 func StartWorkerPool(ctx context.Context) error {
-	urls, err := utils.ReadFile(config.Get().DefaultFilePath)
+
+	urls, err := utilsReadFile(config.Get().DefaultFilePath)
 	if err != nil {
 		return err
 	}
 
 	jobChan := make(chan string, len(urls))
-
 	h := minheap.NewMinHeap()
 	heap.Init(h)
 
@@ -73,23 +76,12 @@ func scrapper(ctx context.Context, url string, jobChan chan string, wg *sync.Wai
 	defer wg.Done()
 
 	operation := func() error {
-		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+		body, err := externalsFetchEssay(ctx, "GET", url)
 		if err != nil {
+			log.Printf("error getting url response")
 			return err
 		}
-		client := &http.Client{Timeout: time.Duration(config.Get().External.Timeout) * time.Second}
-		resp, err := client.Do(req)
-		if err != nil {
-			log.Printf("Failed to fetch URL %s: %v", url, err)
-			return err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Errorf("non-200 status code %d for URL %s", resp.StatusCode, url)
-		}
-
-		doc, err := goquery.NewDocumentFromReader(resp.Body)
+		doc, err := goquery.NewDocumentFromReader(body)
 		if err != nil {
 			log.Printf("Failed to parse page %s: %v", url, err)
 			return err
@@ -106,7 +98,7 @@ func scrapper(ctx context.Context, url string, jobChan chan string, wg *sync.Wai
 	}
 
 	// Retry on failure with exponential backoff
-	err := backoff.Retry(operation, backoff.NewExponentialBackOff())
+	err := backoff.Retry(operation, backoff.WithMaxRetries(backoff.NewExponentialBackOff(), 5))
 	if err != nil {
 		log.Printf("Failed to scrape %s after retries: %v", url, err)
 	}
@@ -119,7 +111,8 @@ func tokenizer(jobChan chan string, wg *sync.WaitGroup, h *minheap.MinHeap) {
 		words := getWords(content)
 		wordFreqMux.Lock()
 		for _, word := range words {
-			if len(word) > 3 {
+			// condition: to filter words with minimum length
+			if len(word) >= config.Get().WordMinLength {
 				wordFreqMap[word]++
 				// Add the current number to the heap
 				heap.Push(h, minheap.Heap{Word: word, Count: wordFreqMap[word]})
@@ -148,7 +141,9 @@ func extractText(s *goquery.Selection) string {
 	s.Contents().Each(func(i int, child *goquery.Selection) {
 		if goquery.NodeName(child) == "#text" {
 			// If it's a text node, append its content
-			text.WriteString(strings.TrimSpace(child.Text()) + " ")
+			if strings.TrimSpace(child.Text()) != constants.Empty {
+				text.WriteString(strings.TrimSpace(child.Text()) + " ")
+			}
 		} else {
 			// If it's an element node, extract its child nodes recursively
 			text.WriteString(extractText(child))

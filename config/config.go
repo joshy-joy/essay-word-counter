@@ -18,12 +18,13 @@ type Cgf struct {
 	} `yaml:"external"`
 	DefaultFilePath string `yaml:"defaultFilePath"`
 	ResultLength    int    `yaml:"resultLength"`
+	WordMinLength   int    `yaml:"wordMinLength"`
 }
 
 var config *Cgf
 
-func InitConfig() error {
-	f, err := os.Open("./resources/config.yml")
+func InitConfig(path string) error {
+	f, err := os.Open(path)
 	if err != nil {
 		return err
 	}

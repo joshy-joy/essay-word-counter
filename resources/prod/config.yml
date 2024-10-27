@@ -8,3 +8,4 @@ external:
 
 defaultFilePath: "./example/endg-urls.txt"
 resultLength: 10
+wordMinLength: 3
