@@ -22,7 +22,7 @@ func shutdown(cancel context.CancelFunc) {
 
 func getFlags() {
 	file := flag.String("file", config.Get().DefaultFilePath, "Optional: To set file path containing the url")
-	count := flag.Int("top", config.Get().ResultLeght, "Optional: To set result count")
+	count := flag.Int("top", config.Get().ResultLength, "Optional: To set result count")
 	flag.Parse()
 	config.SetFilePath(*file)
 	config.SetTopN(*count)

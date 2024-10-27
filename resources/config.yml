@@ -7,4 +7,4 @@ external:
   timeoutInSeconds: 30
 
 defaultFilePath: "./example/endg-urls.txt"
-resultLeght: 10
+resultLength: 10

@@ -125,7 +125,7 @@ func tokenizer(jobChan chan string, wg *sync.WaitGroup, h *minheap.MinHeap) {
 				heap.Push(h, minheap.Heap{Word: word, Count: wordFreqMap[word]})
 
 				// If heap size exceeds 10, remove the smallest element
-				if h.Len() > 10 {
+				if h.Len() > config.Get().ResultLength {
 					heap.Pop(h)
 				}
 			}

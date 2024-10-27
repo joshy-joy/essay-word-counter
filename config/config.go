@@ -17,7 +17,7 @@ type Cgf struct {
 		Timeout int64 `yaml:"timeoutInSeconds"`
 	} `yaml:"external"`
 	DefaultFilePath string `yaml:"defaultFilePath"`
-	ResultLeght     int    `yaml:"resultLeght"`
+	ResultLength    int    `yaml:"resultLength"`
 }
 
 var config *Cgf
@@ -48,5 +48,5 @@ func SetFilePath(path string) {
 }
 
 func SetTopN(count int) {
-	config.ResultLeght = count
+	config.ResultLength = count
 }
