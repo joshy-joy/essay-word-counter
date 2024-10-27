@@ -32,8 +32,8 @@ jobs:
       - name: Run golangci-lint with fix
         id: lint
         run: |
-          echo 'BUILD_ERRORS<<EOF' >> $GITHUB_OUTPUT
-          echo "BUILD_ERRORS=$(golangci-lint run --fix 2>&1)\n" >> $GITHUB_OUTPUT
+          echo 'LINT_ERRORS<<EOF' >> $GITHUB_OUTPUT
+          echo "LINT_ERRORS=$(golangci-lint run --fix 2>&1)\n" >> $GITHUB_OUTPUT
           echo 'EOF' >> $GITHUB_OUTPUT
           golangci-lint run --fix
           
@@ -44,7 +44,7 @@ jobs:
           message: |
             **Lint Failed** :x:
             ```
-            ${{ join(steps.build.outputs.*, '\n') }}
+            ${{ join(steps.lint.outputs.*, '\n') }}
             ```
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
