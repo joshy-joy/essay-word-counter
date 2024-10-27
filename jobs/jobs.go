@@ -23,7 +23,7 @@ var (
 	wordFreqMux sync.Mutex
 )
 
-func InitJobs(ctx context.Context) error {
+func StartWorkerPool(ctx context.Context) error {
 	urls, err := utils.ReadFile(config.Get().DefaultFilePath)
 	if err != nil {
 		return err

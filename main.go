@@ -44,7 +44,7 @@ func main() {
 	// get arguments from cmd
 	getFlags()
 
-	err = jobs.InitJobs(ctx)
+	err = jobs.StartWorkerPool(ctx)
 	if err != nil {
 		log.Fatal("error running job")
 	}
