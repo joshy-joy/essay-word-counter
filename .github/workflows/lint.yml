@@ -38,7 +38,6 @@ jobs:
           golangci-lint run --fix
           
       - name: Output lint errors
-        if: failure()
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: Lint Error
