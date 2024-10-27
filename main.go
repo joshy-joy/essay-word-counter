@@ -43,6 +43,7 @@ func main() {
 
 	// get arguments from cmd
 	getFlags()
+
 	err = jobs.InitJobs(ctx)
 	if err != nil {
 		log.Fatal("error running job")

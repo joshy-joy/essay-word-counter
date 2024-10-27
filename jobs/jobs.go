@@ -31,7 +31,7 @@ func InitJobs(ctx context.Context) error {
 
 	jobChan := make(chan string, len(urls))
 
-	h := &minheap.MinHeap{}
+	h := minheap.NewMinHeap()
 	heap.Init(h)
 
 	var wg sync.WaitGroup
@@ -41,7 +41,7 @@ func InitJobs(ctx context.Context) error {
 		wg.Add(1)
 		go func() {
 			for _, url := range urls {
-				scrpper(ctx, url, jobChan, &wg)
+				scrapper(ctx, url, jobChan, &wg)
 			}
 			close(jobChan)
 		}()
@@ -50,15 +50,26 @@ func InitJobs(ctx context.Context) error {
 	// Start word processing workers
 	for i := 0; i < config.Get().Tokenizer.Count; i++ {
 		wg.Add(1)
-		go tokenizer(jobChan, &wg)
+		go tokenizer(jobChan, &wg, h)
 	}
 
 	wg.Wait()
+
+	result := make([]minheap.Heap, h.Len())
+	for i := 0; h.Len() > 0; i++ {
+		result[i] = heap.Pop(h).(minheap.Heap)
+	}
+
+	formatterJson, err := utils.PrettyPrintJSON(result)
+	if err != nil {
+		return err
+	}
+	fmt.Println(formatterJson)
 	return nil
 }
 
 // Worker function to process each URL
-func scrpper(ctx context.Context, url string, jobChan chan string, wg *sync.WaitGroup) {
+func scrapper(ctx context.Context, url string, jobChan chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	operation := func() error {
@@ -66,7 +77,7 @@ func scrpper(ctx context.Context, url string, jobChan chan string, wg *sync.Wait
 		if err != nil {
 			return err
 		}
-		client := &http.Client{Timeout: time.Duration(config.Get().External.Timeout)}
+		client := &http.Client{Timeout: time.Duration(config.Get().External.Timeout) * time.Second}
 		resp, err := client.Do(req)
 		if err != nil {
 			log.Printf("Failed to fetch URL %s: %v", url, err)
@@ -84,8 +95,13 @@ func scrpper(ctx context.Context, url string, jobChan chan string, wg *sync.Wait
 			return err
 		}
 
-		content := doc.Find("body").Text()
-		jobChan <- content
+		var content strings.Builder
+		doc.Find("body").Each(func(i int, s *goquery.Selection) {
+			// Iterate over all the child nodes of the body tag
+			content.WriteString(extractText(s))
+		})
+
+		jobChan <- content.String()
 		return nil
 	}
 
@@ -97,13 +113,22 @@ func scrpper(ctx context.Context, url string, jobChan chan string, wg *sync.Wait
 }
 
 // Function to count words from each post
-func tokenizer(jobChan chan string, wg *sync.WaitGroup) {
+func tokenizer(jobChan chan string, wg *sync.WaitGroup, h *minheap.MinHeap) {
 	defer wg.Done()
 	for content := range jobChan {
 		words := getWords(content)
 		wordFreqMux.Lock()
 		for _, word := range words {
-			wordFreqMap[word]++
+			if len(word) > 3 {
+				wordFreqMap[word]++
+				// Add the current number to the heap
+				heap.Push(h, minheap.Heap{Word: word, Count: wordFreqMap[word]})
+
+				// If heap size exceeds 10, remove the smallest element
+				if h.Len() > 10 {
+					heap.Pop(h)
+				}
+			}
 		}
 		wordFreqMux.Unlock()
 	}
@@ -114,4 +139,20 @@ func getWords(content string) []string {
 	re := regexp.MustCompile(`[^\w\s]+`)
 	cleanContent := re.ReplaceAllString(content, "")
 	return strings.Fields(strings.ToLower(cleanContent))
+}
+
+// Recursive function to extract text from HTML nodes
+func extractText(s *goquery.Selection) string {
+	var text strings.Builder
+	// Loop through each child node
+	s.Contents().Each(func(i int, child *goquery.Selection) {
+		if goquery.NodeName(child) == "#text" {
+			// If it's a text node, append its content
+			text.WriteString(strings.TrimSpace(child.Text()) + " ")
+		} else {
+			// If it's an element node, extract its child nodes recursively
+			text.WriteString(extractText(child))
+		}
+	})
+	return text.String()
 }

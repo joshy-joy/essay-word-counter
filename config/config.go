@@ -14,7 +14,7 @@ type Cgf struct {
 		Count int `yaml:"count"`
 	} `yaml:"tokenizerJob"`
 	External struct {
-		Timeout int64 `yaml:"timeout"`
+		Timeout int64 `yaml:"timeoutInSeconds"`
 	} `yaml:"external"`
 	DefaultFilePath string `yaml:"defaultFilePath"`
 	ResultLeght     int    `yaml:"resultLeght"`
@@ -23,7 +23,7 @@ type Cgf struct {
 var config *Cgf
 
 func InitConfig() error {
-	f, err := os.Open("../externals/config.yml")
+	f, err := os.Open("./resources/config.yml")
 	if err != nil {
 		return err
 	}
