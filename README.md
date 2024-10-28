@@ -7,6 +7,7 @@ A Golang-based project to scrape essays from websites, process the content, and 
 ## Table of Contents
 - [Overview](#overview)
 - [Features](#features)
+- [Architecture](#architecture)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
@@ -31,6 +32,8 @@ The **Essay Word Counter** project is designed to:
 - **Concurrency**: Implements worker pools for both scraping and word processing.
 - **Data Persistence**: Supports JSON formatting for output data.
 
+## Installation
+![Architecture](architecture.png)
 ## Installation
 
 To install and run this project, follow these steps:
