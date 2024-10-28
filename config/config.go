@@ -1,9 +1,9 @@
 package config
 
 import (
-	"os"
-
+	"github.com/joshy-joy/essay-word-counter/constants"
 	"gopkg.in/yaml.v3"
+	"os"
 )
 
 type Cgf struct {
@@ -45,9 +45,13 @@ func Get() Cgf {
 }
 
 func SetFilePath(path string) {
-	config.DefaultFilePath = path
+	if path != constants.Empty {
+		config.DefaultFilePath = path
+	}
 }
 
 func SetTopN(count int) {
-	config.ResultLength = count
+	if count != 0 {
+		config.ResultLength = count
+	}
 }
