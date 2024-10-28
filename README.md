@@ -53,6 +53,11 @@ To install and run this project, follow these steps:
     ```bash
     go run main.go
 
+3. **Build the project**:
+
+    ```bash
+    go build main.go
+
 ## Usage
 1. **Configure the project**: Ensure you have a configuration file (e.g., ```config.yml```) in the resources directory.
 2. **Run the application**:
