@@ -32,7 +32,7 @@ The **Essay Word Counter** project is designed to:
 - **Concurrency**: Implements worker pools for both scraping and word processing.
 - **Data Persistence**: Supports JSON formatting for output data.
 
-## Installation
+## Architecture
 ![Architecture](architecture.png)
 ## Installation
 
