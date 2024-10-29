@@ -14,10 +14,10 @@ const devConfigFilePath = "../resources/dev/config.yml"
 
 // Test FetchEssay with a successful HTTP request (status 200)
 func TestFetchEssaySuccess(t *testing.T) {
-	config.InitConfig(devConfigFilePath)
+	_ = config.InitConfig(devConfigFilePath)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("This is a test response"))
+		_, _ = w.Write([]byte("This is a test response"))
 	}))
 	defer server.Close()
 
@@ -31,7 +31,7 @@ func TestFetchEssaySuccess(t *testing.T) {
 
 // Test FetchEssay with a non-200 status code
 func TestFetchEssayError(t *testing.T) {
-	config.InitConfig(devConfigFilePath)
+	_ = config.InitConfig(devConfigFilePath)
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 	}))
@@ -45,7 +45,7 @@ func TestFetchEssayError(t *testing.T) {
 
 // Test FetchEssay with an invalid URL
 func TestFetchEssayErrorInvalidURL(t *testing.T) {
-	config.InitConfig(devConfigFilePath)
+	_ = config.InitConfig(devConfigFilePath)
 	ctx := context.Background()
 	resp, err := FetchEssay(ctx, "GET", "querty")
 	assert.NotNil(t, err, "Expected an error due to invalid URL")
@@ -54,7 +54,7 @@ func TestFetchEssayErrorInvalidURL(t *testing.T) {
 
 // Test FetchEssay with an empty URL
 func TestFetchEssayErrorEmptyURL(t *testing.T) {
-	config.InitConfig(devConfigFilePath)
+	_ = config.InitConfig(devConfigFilePath)
 	ctx := context.Background()
 	resp, err := FetchEssay(ctx, "GET", "")
 	assert.NotNil(t, err, "Expected an error due to empty URL")
