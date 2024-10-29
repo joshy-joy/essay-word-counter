@@ -1,0 +1,52 @@
+name: Lint
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - '.github/**'
+      - '.vscode/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Install golangci-lint
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
+        shell: bash
+
+      - name: Run golangci-lint and capture output
+        id: lint
+        run: |
+          # Capture the output of golangci-lint
+          echo 'LINT_ERRORS<<EOF' >> $GITHUB_OUTPUT
+          echo "LINT_ERRORS=$(golangci-lint run --fix 2>&1)\n" >> $GITHUB_OUTPUT
+          echo 'EOF' >> $GITHUB_OUTPUT
+          golangci-lint run --fix
+
+      - name: Output lint errors
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: Lint Error
+          message: |
+            **Lint Errors** :x:
+            ```
+            ${{ join(steps.lint.outputs.*, '\n') }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
